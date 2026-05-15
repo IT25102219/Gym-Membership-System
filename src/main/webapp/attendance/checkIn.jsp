@@ -1,3 +1,11 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.gym.model.AttendanceRecord, com.gym.model.Member, java.util.List" %>
+<%
+    if (session.getAttribute("loggedMember") == null) {
+        response.sendRedirect(request.getContextPath() + "/index.jsp"); return;
+    }
+    Member loggedMember = (Member) session.getAttribute("loggedMember");
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
