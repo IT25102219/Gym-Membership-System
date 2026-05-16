@@ -1,0 +1,84 @@
+# =========================
+# Java / Spring Boot
+# =========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven Wrapper generated files
+.mvn/wrapper/maven-wrapper.jar
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# Database credentials / local config
+application-local.properties
+application-local.yml
+application-dev.properties
+application-dev.yml
+
+# =========================
+# IDE Files
+# =========================
+.idea/
+*.iml
+*.iws
+*.ipr
+
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+spring.log
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Temporary Files
+# =========================
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# =========================
+# Build / Runtime
+# =========================
+bin/
+out/
+build/
+
+# =========================
+# Uploaded files / generated files
+# =========================
+uploads/
+generated/
+exports/
+
+# =========================
+# MySQL / Database dumps
+# =========================
+*.sql.gz
+*.dump
+*.bak
+
+# Keep database setup script if needed
+database_setup.sql
