@@ -1,38 +1,139 @@
+
 package com.gym.model;
 
-public class Member {
-    private String id;
-    private String name;
-    private String email;
-    private String role;
-    private String accessLevel;
-    private double monthlyFee;
 
-    public Member() {}
+public abstract class Member extends Person {
 
-    public Member(String id, String name, String email, String role, String accessLevel, double monthlyFee) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.role = role;
-        this.accessLevel = accessLevel;
-        this.monthlyFee = monthlyFee;
+
+    private int memberId;
+
+    private String dob;
+
+
+    private String gender;
+
+
+    private String membershipType;
+
+
+    private String joinDate;
+
+
+    private String status;
+
+
+    private String passwordHash;
+
+
+    public Member(int memberId, String name, String email, String phone,
+                  String dob, String gender, String membershipType,
+                  String joinDate, String status, String passwordHash) {
+
+        super(memberId, name, email, phone);
+
+
+        this.memberId = memberId;
+        this.dob = dob;
+        this.gender = gender;
+        this.membershipType = membershipType;
+        this.joinDate = joinDate;
+        this.status = status;
+        this.passwordHash = passwordHash;
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
-    public String getAccessLevel() { return accessLevel; }
-    public void setAccessLevel(String accessLevel) { this.accessLevel = accessLevel; }
-    public double getMonthlyFee() { return monthlyFee; }
-    public void setMonthlyFee(double monthlyFee) { this.monthlyFee = monthlyFee; }
 
-    public String getDisplayInfo() {
-        return "Member ID: " + id + " | Email: " + email;
+    public Member() {
+        super();
+    }
+
+    public abstract double getMonthlyFee();
+
+
+    public abstract int getAccessLevel();
+
+
+    @Override
+    public String getRole() {
+
+        return "MEMBER";
+    }
+
+    public boolean isActive() {
+
+        return "ACTIVE".equalsIgnoreCase(this.status);
+    }
+
+
+
+    public int getMemberId() {
+        return memberId;
+    }
+
+
+    public String getDob() {
+        return dob;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+
+    public String getMembershipType() {
+        return membershipType;
+    }
+
+
+    public String getJoinDate() {
+        return joinDate;
+    }
+
+
+    public String getStatus() {
+        return status;
+    }
+
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+
+
+    public void setMemberId(int memberId) {
+        this.memberId = memberId;
+
+        super.setPersonId(memberId);
+    }
+
+    public void setDob(String dob) {
+        this.dob = dob;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public void setMembershipType(String membershipType) {
+        this.membershipType = membershipType;
+    }
+
+    public void setJoinDate(String joinDate) {
+        this.joinDate = joinDate;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Member{id=" + memberId + ", name='" + getName() +
+                "', type='" + membershipType + "', status='" + status + "'}";
     }
 }
