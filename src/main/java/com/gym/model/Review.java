@@ -39,11 +39,12 @@ public abstract class Review implements IModerable, Displayable {
     public boolean approve() {
         this.status = "ACTIVE";
         return true;
+    }
 
     @Override
     public boolean remove() {
         this.status = "REMOVED";
-        return true;
+        return true; 
     }
 
     @Override
@@ -60,7 +61,7 @@ public abstract class Review implements IModerable, Displayable {
         }
 
         for (int i = rating; i < 5; i++) {
-            stars.append("☆");
+            stars.append("☆"); 
         }
 
         return stars.toString();
