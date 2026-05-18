@@ -1,95 +1,121 @@
+
 package com.gym.servlet;
 
-import com.gym.model.LongTermPlan;
-import com.gym.model.MembershipPlan;
-import com.gym.model.ShortTermPlan;
+import com.gym.model.*;
 import com.gym.service.PlanService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.List;
+
 
 @WebServlet("/plans")
 public class PlanServlet extends HttpServlet {
 
+   
     private PlanService planService = new PlanService();
 
+   
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         String action = request.getParameter("action");
-        if (action == null) action = "list";
+        if (action == null) action = "active"; 
 
         switch (action) {
             case "list":
-                listPlans(request, response);
+                
+                List<MembershipPlan> allPlans = planService.getAllPlans();
+                request.setAttribute("plans", allPlans);
+                request.getRequestDispatcher("/plan/planList.jsp").forward(request, response);
                 break;
-            case "delete":
-                deletePlan(request, response);
+
+            case "active":
+               
+                List<MembershipPlan> activePlans = planService.getActivePlans();
+                request.setAttribute("plans", activePlans);
+                request.getRequestDispatcher("/plan/plans.jsp").forward(request, response);
                 break;
+
             case "edit":
-                showEditForm(request, response);
+               
+                int editId = Integer.parseInt(request.getParameter("id"));
+                MembershipPlan planToEdit = planService.getPlanById(editId);
+                request.setAttribute("plan", planToEdit);
+                request.getRequestDispatcher("/plan/editPlan.jsp").forward(request, response);
                 break;
-            case "add":
-                response.sendRedirect("plan/addPlan.jsp");
+
+            case "delete":
+               
+                int deleteId = Integer.parseInt(request.getParameter("id"));
+                planService.deletePlan(deleteId);
+                request.getSession().setAttribute("successMessage", "Plan deactivated.");
+                response.sendRedirect(request.getContextPath() + "/plans?action=list");
                 break;
+
             default:
-                listPlans(request, response);
+                response.sendRedirect(request.getContextPath() + "/plans?action=active");
         }
     }
 
+    
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         String action = request.getParameter("action");
-        if ("add".equalsIgnoreCase(action)) {
-            savePlan(request, response, true);
-        } else if ("update".equalsIgnoreCase(action)) {
-            savePlan(request, response, false);
+
+        if ("add".equals(action)) {
+           
+            String planName     = request.getParameter("planName");
+            int durationMonths  = Integer.parseInt(request.getParameter("durationMonths"));
+            double price        = Double.parseDouble(request.getParameter("price"));
+            String features     = request.getParameter("features");
+            String planType     = request.getParameter("planType"); // "SHORT_TERM" or "LONG_TERM"
+
+            
+            MembershipPlan newPlan;
+            if ("LONG_TERM".equalsIgnoreCase(planType)) {
+               
+                newPlan = new LongTermPlan(0, planName, durationMonths, price, features, planType, true);
+            } else {
+                
+                newPlan = new ShortTermPlan(0, planName, durationMonths, price, features, planType, true);
+            }
+
+            boolean added = planService.addPlan(newPlan);
+            if (added) {
+                request.getSession().setAttribute("successMessage", "Plan added successfully.");
+            } else {
+                request.getSession().setAttribute("errorMessage", "Failed to add plan.");
+            }
+            response.sendRedirect(request.getContextPath() + "/plans?action=list");
+
+        } else if ("update".equals(action)) {
+            int planId         = Integer.parseInt(request.getParameter("planId"));
+            String planName    = request.getParameter("planName");
+            int duration       = Integer.parseInt(request.getParameter("durationMonths"));
+            double price       = Double.parseDouble(request.getParameter("price"));
+            String features    = request.getParameter("features");
+            String planType    = request.getParameter("planType");
+            boolean isActive   = "true".equals(request.getParameter("isActive"));
+
+            
+            MembershipPlan updated;
+            if ("LONG_TERM".equalsIgnoreCase(planType)) {
+                updated = new LongTermPlan(planId, planName, duration, price, features, planType, isActive);
+            } else {
+                updated = new ShortTermPlan(planId, planName, duration, price, features, planType, isActive);
+            }
+
+            planService.updatePlan(updated);
+            request.getSession().setAttribute("successMessage", "Plan updated successfully.");
+            response.sendRedirect(request.getContextPath() + "/plans?action=list");
         }
-    }
-
-    private void listPlans(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<MembershipPlan> plans = planService.getAllPlans();
-        request.setAttribute("plans", plans);
-        request.getRequestDispatcher("plan/plans.jsp").forward(request, response);
-    }
-
-    private void deletePlan(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        planService.deletePlan(id);
-        response.sendRedirect("plans?action=list");
-    }
-
-    private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        MembershipPlan plan = planService.getPlanById(id);
-        request.setAttribute("plan", plan);
-        request.getRequestDispatcher("plan/editPlan.jsp").forward(request, response);
-    }
-
-    private void savePlan(HttpServletRequest request, HttpServletResponse response, boolean isNew) throws IOException {
-        String name = request.getParameter("planName");
-        int duration = Integer.parseInt(request.getParameter("durationMonths"));
-        double price = Double.parseDouble(request.getParameter("price"));
-        String features = request.getParameter("features");
-        String planType = request.getParameter("planType");
-        boolean active = request.getParameter("isActive") != null;
-
-        MembershipPlan plan;
-        if ("LONG_TERM".equalsIgnoreCase(planType)) {
-            plan = new LongTermPlan(0, name, duration, price, features, planType, active);
-        } else {
-            plan = new ShortTermPlan(0, name, duration, price, features, planType, active);
-        }
-
-        if (!isNew) {
-            plan.setPlanId(Integer.parseInt(request.getParameter("planId")));
-            planService.updatePlan(plan);
-        } else {
-            planService.addPlan(plan);
-        }
-        response.sendRedirect("plans?action=list");
     }
 }
