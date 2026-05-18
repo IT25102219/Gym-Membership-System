@@ -4,88 +4,95 @@
     if (session.getAttribute("loggedMember") == null) {
         response.sendRedirect(request.getContextPath() + "/index.jsp"); return;
     }
+    request.setAttribute("pageTitle", "Attendance Report - GymPro");
 %>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Attendance Report — GymPro</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>.navbar { background: linear-gradient(90deg,#1a1a2e,#0f3460) !important; }</style>
-</head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="<%= request.getContextPath() %>/dashboard.jsp">🏋️ GymPro</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="<%= request.getContextPath() %>/dashboard.jsp">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="<%= request.getContextPath() %>/attendance?action=today">Attendance</a></li>
-                </ul>
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link text-warning" href="<%= request.getContextPath() %>/auth?action=logout">Logout</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <div class="container mt-4">
-        <h4 class="fw-bold mb-3">📊 Attendance Report</h4>
+<jsp:include page="/includes/header.jsp" />
 
-        <!-- Date filter form -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-                <form action="<%= request.getContextPath() %>/attendance" method="get" class="d-flex gap-2">
-                    <input type="hidden" name="action" value="report">
-                    <label class="form-label mt-1 fw-semibold">Select Date:</label>
-                    <input type="date" class="form-control" name="date"
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0 d-flex align-items-center"><i data-lucide="bar-chart-2" class="me-2 text-info"></i> Attendance Report</h4>
+</div>
+
+<!-- Date filter form -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+        <form action="<%= request.getContextPath() %>/attendance" method="get" class="row g-3 align-items-end">
+            <input type="hidden" name="action" value="report">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-muted small text-uppercase">Select Date</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i data-lucide="calendar" class="text-muted" style="width:18px;height:18px;"></i></span>
+                    <input type="date" class="form-control border-start-0 ps-0 bg-light" name="date"
                            value="<%= request.getAttribute("reportDate") != null ? request.getAttribute("reportDate") : "" %>">
-                    <button type="submit" class="btn btn-primary">View Report</button>
-                    <a href="<%= request.getContextPath() %>/attendance?action=today" class="btn btn-outline-secondary">Today</a>
-                </form>
-            </div>
-        </div>
-
-        <% List<AttendanceRecord> records = (List<AttendanceRecord>) request.getAttribute("records"); %>
-
-        <!-- Stats -->
-        <div class="row g-3 mb-3">
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center p-3">
-                    <h3 class="fw-bold text-info"><%= records != null ? records.size() : 0 %></h3>
-                    <p class="text-muted mb-0">Total Visitors</p>
                 </div>
             </div>
-        </div>
+            <div class="col-md-8">
+                <button type="submit" class="btn btn-primary me-2"><i data-lucide="filter" class="me-1"></i> View Report</button>
+                <a href="<%= request.getContextPath() %>/attendance?action=today" class="btn btn-outline-secondary"><i data-lucide="calendar-today" class="me-1"></i> Today</a>
+            </div>
+        </form>
+    </div>
+</div>
 
-        <div class="card border-0 shadow-sm">
-            <div class="card-header">
-                Report for: <strong><%= request.getAttribute("reportDate") %></strong>
-                &nbsp;<small class="text-muted">(Note: For export, print this page)</small>
+<% List<AttendanceRecord> records = (List<AttendanceRecord>) request.getAttribute("records"); %>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center p-4">
+            <div class="icon-wrapper mx-auto mb-2" style="background: #e0f2fe; color: #0284c7;">
+                <i data-lucide="users"></i>
             </div>
-            <div class="card-body p-0">
-                <table class="table table-hover mb-0">
-                    <thead class="table-dark">
-                        <tr><th>Member</th><th>Check-In</th><th>Check-Out</th><th>Duration</th><th>Report</th></tr>
-                    </thead>
-                    <tbody>
-                        <% if (records != null && !records.isEmpty()) {
-                              for (AttendanceRecord r : records) { %>
-                        <tr>
-                            <td class="fw-semibold"><%= r.getMemberName() %></td>
-                            <td><%= r.getCheckIn() %></td>
-                            <td><%= r.getCheckOut() != null ? r.getCheckOut() : "Still inside" %></td>
-                            <td><%= r.getCheckOut() != null ? r.calculateDuration() + " hrs" : "—" %></td>
-                            <%-- generateReport() from IReportable interface --%>
-                            <td><small class="text-muted"><%= r.generateReport() %></small></td>
-                        </tr>
-                        <% } } else { %>
-                        <tr><td colspan="5" class="text-center text-muted py-4">No attendance records for this date.</td></tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
+            <h2 class="fw-bold text-info mb-1"><%= records != null ? records.size() : 0 %></h2>
+            <p class="text-muted mb-0 fw-medium">Total Visitors</p>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</div>
+
+<div class="card border-0 shadow-sm overflow-hidden">
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+        <span><i data-lucide="file-text" class="me-2 text-muted" style="width:18px;height:18px;"></i> Report for: <strong><%= request.getAttribute("reportDate") %></strong></span>
+        <button onclick="window.print()" class="btn btn-sm btn-outline-secondary"><i data-lucide="printer" class="me-1 w-4 h-4"></i> Print</button>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Member</th>
+                    <th>Check-In</th>
+                    <th>Check-Out</th>
+                    <th>Duration</th>
+                    <th>Report</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (records != null && !records.isEmpty()) {
+                      for (AttendanceRecord r : records) { %>
+                <tr>
+                    <td class="fw-semibold"><i data-lucide="user" style="width:14px;height:14px;" class="me-1 text-muted"></i> <%= r.getMemberName() %></td>
+                    <td><span class="badge bg-light text-dark border"><i data-lucide="log-in" style="width:12px;height:12px;" class="me-1 text-success"></i><%= r.getCheckIn() %></span></td>
+                    <td>
+                        <% if (r.getCheckOut() != null) { %>
+                            <span class="badge bg-light text-dark border"><i data-lucide="log-out" style="width:12px;height:12px;" class="me-1 text-danger"></i><%= r.getCheckOut() %></span>
+                        <% } else { %>
+                            <span class="badge bg-warning text-dark"><i data-lucide="clock" style="width:12px;height:12px;" class="me-1"></i>Inside</span>
+                        <% } %>
+                    </td>
+                    <td><span class="fw-medium"><%= r.getCheckOut() != null ? r.calculateDuration() + " hrs" : "—" %></span></td>
+                    <td><small class="text-muted bg-light p-1 rounded border"><%= r.generateReport() %></small></td>
+                </tr>
+                <% } } else { %>
+                <tr><td colspan="5" class="text-center text-muted py-5"><i data-lucide="inbox" style="width:32px;height:32px;opacity:0.5" class="d-block mx-auto mb-2"></i>No attendance records for this date.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+@media print {
+    .navbar, form, .btn-outline-secondary { display: none !important; }
+    .card { box-shadow: none !important; border: 1px solid #dee2e6 !important; }
+}
+</style>
+
+<jsp:include page="/includes/footer.jsp" />
