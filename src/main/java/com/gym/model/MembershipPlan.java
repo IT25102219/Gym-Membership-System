@@ -1,3 +1,4 @@
+
 package com.gym.model;
 
 import com.gym.interfaces.Displayable;
@@ -5,14 +6,27 @@ import com.gym.interfaces.IPlanPriceable;
 
 public abstract class MembershipPlan implements IPlanPriceable, Displayable {
 
+    
     private int planId;
+
+   
     private String planName;
+
+   
     private int durationMonths;
+
+    
     private double price;
+
+   
     private String features;
+
+   
     private String planType;
+
     private boolean isActive;
 
+   
     public MembershipPlan(int planId, String planName, int durationMonths,
                           double price, String features, String planType, boolean isActive) {
         this.planId = planId;
@@ -24,29 +38,89 @@ public abstract class MembershipPlan implements IPlanPriceable, Displayable {
         this.isActive = isActive;
     }
 
+    
     public MembershipPlan() {}
 
+   
     @Override
     public abstract double calculateDiscountedPrice();
 
+  
     @Override
     public double calculatePrice() {
+       
         return price;
     }
 
-    public int getPlanId()          { return planId; }
-    public String getPlanName()     { return planName; }
-    public int getDurationMonths()  { return durationMonths; }
-    public double getPrice()        { return price; }
-    public String getFeatures()     { return features; }
-    public String getPlanType()     { return planType; }
-    public boolean isActive()       { return isActive; }
+    
+    
+    public int getPlanId() {
+        return planId;
+    }
 
-    public void setPlanId(int planId)               { this.planId = planId; }
-    public void setPlanName(String planName)         { this.planName = planName; }
-    public void setDurationMonths(int d)             { this.durationMonths = d; }
-    public void setPrice(double price)               { this.price = price; }
-    public void setFeatures(String features)         { this.features = features; }
-    public void setPlanType(String planType)         { this.planType = planType; }
-    public void setActive(boolean active)            { isActive = active; }
+   
+    public String getPlanName() {
+        return planName;
+    }
+
+    
+    public int getDurationMonths() {
+        return durationMonths;
+    }
+
+    
+    public double getPrice() {
+        return price;
+    }
+
+   
+    public String getFeatures() {
+        return features;
+    }
+
+   
+    public String getPlanType() {
+        return planType;
+    }
+
+  
+    public boolean isActive() {
+        return isActive;
+    }
+
+   
+    public void setPlanId(int planId) {
+        this.planId = planId;
+    }
+
+    public void setPlanName(String planName) {
+        this.planName = planName;
+    }
+
+    public void setDurationMonths(int durationMonths) {
+        this.durationMonths = durationMonths;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public void setFeatures(String features) {
+        this.features = features;
+    }
+
+    public void setPlanType(String planType) {
+        this.planType = planType;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    
+    @Override
+    public String toString() {
+        return "MembershipPlan{id=" + planId + ", name='" + planName +
+               "', type='" + planType + "', price=" + price + "}";
+    }
 }
