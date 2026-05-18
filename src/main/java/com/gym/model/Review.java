@@ -39,6 +39,7 @@ public abstract class Review implements IModerable, Displayable {
     public boolean approve() {
         this.status = "ACTIVE";
         return true;
+    }
 
     @Override
     public boolean remove() {
