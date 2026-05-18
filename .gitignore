@@ -1,11 +1,13 @@
 # =========================
+target/
 # Java / Spring Boot
 # =========================
 target/
-*.class
+*.classes
 *.jar
 *.war
 *.ear
+
 
 # Maven Wrapper generated files
 .mvn/wrapper/maven-wrapper.jar

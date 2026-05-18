@@ -1,9 +1,3 @@
-<%--
-  PAGE    : payment/addPayment.jsp
-  PURPOSE : Admin form to record a new payment. Choosing CASH or ONLINE
-            determines which Java subclass is created (POLYMORPHISM).
-  CALLS   : PaymentServlet (/payments) via POST with action="add"
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.gym.model.MembershipPlan, java.util.List" %>
 <%
