@@ -2,7 +2,7 @@
 # Java / Spring Boot
 # =========================
 target/
-*.class
+*.classes
 *.jar
 *.war
 *.ear
