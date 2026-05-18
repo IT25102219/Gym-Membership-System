@@ -13,23 +13,41 @@ public class DBConnection {
 
     private static final String DEFAULT_DB_URL =
         "jdbc:mysql://localhost:3306/gym_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+
     private static final String DEFAULT_DB_USER = "root";
+
     private static final String DEFAULT_DB_PASS = "root";
+
     private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
+
     private static final Map<String, String> ENV_CACHE = new ConcurrentHashMap<>();
+
     private static volatile boolean ENV_LOADED = false;
 
     public static Connection getConnection() {
         try {
             Class.forName(DRIVER);
+
             String dbUrl = getConfigValue("DB_URL", DEFAULT_DB_URL);
             String dbUser = getConfigValue("DB_USERNAME", DEFAULT_DB_USER);
             String dbPass = getConfigValue("DB_PASSWORD", DEFAULT_DB_PASS);
-            return DriverManager.getConnection(dbUrl, dbUser, dbPass);
+            Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
+
+            return connection;
+
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("MySQL JDBC Driver not found. Error: " + e.getMessage(), e);
+            throw new RuntimeException(
+                "MySQL JDBC Driver not found. Check pom.xml for mysql-connector-j dependency. Error: "
+                + e.getMessage(), e
+            );
+
         } catch (SQLException e) {
-            throw new RuntimeException("Cannot connect to MySQL database. Error: " + e.getMessage(), e);
+            throw new RuntimeException(
+                "Cannot connect to MySQL database. Possible causes: " +
+                "1) MySQL not running, 2) Wrong password, " +
+                "3) gym_db not created (run database_setup.sql). Error: "
+                + e.getMessage(), e
+            );
         }
     }
 
@@ -68,7 +86,7 @@ public class DBConnection {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Warning: Could not read .env file. " + e.getMessage());
+            System.err.println("Warning: Could not read .env file. Using defaults/environment only. " + e.getMessage());
         } finally {
             ENV_LOADED = true;
         }
@@ -77,7 +95,7 @@ public class DBConnection {
     public static void closeConnection(Connection conn) {
         if (conn != null) {
             try {
-                conn.close();
+                conn.close(); 
             } catch (SQLException e) {
                 System.err.println("Warning: Could not close database connection. " + e.getMessage());
             }
