@@ -12,7 +12,20 @@ import java.util.List;
 
 public class AttendanceService {
 
-    public boolean checkIn(int memberId) {
+    public boolean checkIn(int memberId) throws Exception {
+        // Validations
+        if (!memberExists(memberId)) {
+            throw new Exception("Invalid member ID. Member not found.");
+        }
+
+        if (!isMemberActive(memberId)) {
+            throw new Exception("Only active members can check in.");
+        }
+
+        if (getActiveCheckIn(memberId) != null) {
+            throw new Exception("Member already checked in. Please check out first.");
+        }
+
         String sql = "INSERT INTO attendance (member_id, check_in, attend_date) VALUES (?, NOW(), CURDATE())";
         Connection conn = null;
         try {
@@ -23,6 +36,49 @@ public class AttendanceService {
 
         } catch (SQLException e) {
             System.err.println("Error during check-in: " + e.getMessage());
+            throw new Exception("Check-in failed due to a database error.");
+        } finally {
+            DBConnection.closeConnection(conn);
+        }
+    }
+
+    public boolean memberExists(int memberId) {
+        String sql = "SELECT COUNT(*) FROM members WHERE member_id = ?";
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, memberId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+
+        } catch (SQLException e) {
+            System.err.println("Error checking member existence: " + e.getMessage());
+            return false;
+        } finally {
+            DBConnection.closeConnection(conn);
+        }
+    }
+
+    public boolean isMemberActive(int memberId) {
+        String sql = "SELECT status FROM members WHERE member_id = ?";
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, memberId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                String status = rs.getString("status");
+                return status != null && "ACTIVE".equalsIgnoreCase(status.trim());
+            }
+            return false;
+
+        } catch (SQLException e) {
+            System.err.println("Error checking member status: " + e.getMessage());
             return false;
         } finally {
             DBConnection.closeConnection(conn);
@@ -137,7 +193,8 @@ public class AttendanceService {
     public AttendanceRecord getActiveCheckIn(int memberId) {
         String sql = "SELECT a.*, m.name as member_name FROM attendance a " +
                      "JOIN members m ON a.member_id = m.member_id " +
-                     "WHERE a.member_id = ? AND a.check_out IS NULL AND a.attend_date = CURDATE()";
+                     "WHERE a.member_id = ? AND a.check_out IS NULL " +
+                     "ORDER BY a.check_in DESC LIMIT 1";
         Connection conn = null;
         try {
             conn = DBConnection.getConnection();
