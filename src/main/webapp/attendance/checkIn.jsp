@@ -5,9 +5,21 @@
         response.sendRedirect(request.getContextPath() + "/index.jsp"); return;
     }
     Member loggedMember = (Member) session.getAttribute("loggedMember");
+    boolean isAdmin = loggedMember != null && "ADMIN".equalsIgnoreCase(loggedMember.getMembershipType());
     request.setAttribute("pageTitle", "Attendance Today - GymPro");
 %>
 <jsp:include page="/includes/header.jsp" />
+
+<%
+    String successMsg = (String) request.getAttribute("success");
+    String errorMsg = (String) request.getAttribute("error");
+%>
+<% if (successMsg != null) { %>
+    <div class="alert alert-success mt-3"><%= successMsg %></div>
+<% } %>
+<% if (errorMsg != null) { %>
+    <div class="alert alert-danger mt-3"><%= errorMsg %></div>
+<% } %>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0 d-flex align-items-center"><i data-lucide="calendar-check" class="me-2 text-primary"></i> Attendance — Today</h4>
@@ -87,6 +99,7 @@
                     <th>Check-Out</th>
                     <th>Duration</th>
                     <th>Status</th>
+                    <% if (isAdmin) { %><th>Action</th><% } %>
                 </tr>
             </thead>
             <tbody>
@@ -111,6 +124,16 @@
                             <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary"><i data-lucide="check" style="width:12px;height:12px;" class="me-1"></i>LEFT</span>
                         <% } %>
                     </td>
+                    <% if (isAdmin) { %>
+                    <td>
+                        <form action="<%= request.getContextPath() %>/attendance" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this attendance record?');">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="recordId" value="<%= r.getRecordId() %>">
+                            <input type="hidden" name="returnAction" value="today">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                    <% } %>
                 </tr>
                 <% } } else { %>
                 <tr><td colspan="6" class="text-center text-muted py-5"><i data-lucide="inbox" style="width:32px;height:32px;opacity:0.5" class="d-block mx-auto mb-2"></i>No visits today yet.</td></tr>
