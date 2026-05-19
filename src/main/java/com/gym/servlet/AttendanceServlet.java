@@ -92,15 +92,33 @@ public class AttendanceServlet extends HttpServlet {
         String action = request.getParameter("action");
 
         if ("checkin".equals(action)) {
-            // Record a new check-in for the specified member
-            int memberId = Integer.parseInt(request.getParameter("memberId"));
-            boolean success = attendanceService.checkIn(memberId);
-            if (success) {
-                request.getSession().setAttribute("successMessage", "Check-in recorded successfully!");
-            } else {
-                request.getSession().setAttribute("errorMessage", "Check-in failed.");
+            // Record a new check-in for the specified member with validation
+            String memberIdStr = request.getParameter("memberId");
+            int memberId = 0;
+            try {
+                memberId = Integer.parseInt(memberIdStr);
+            } catch (NumberFormatException nfe) {
+                request.setAttribute("error", "Invalid member ID. Member not found.");
+                // reload today's list and forward back to JSP
+                request.setAttribute("records", attendanceService.getTodayAttendance());
+                request.getRequestDispatcher("/attendance/checkIn.jsp").forward(request, response);
+                return;
             }
-            response.sendRedirect(request.getContextPath() + "/attendance?action=today");
+
+            try {
+                boolean success = attendanceService.checkIn(memberId);
+                if (success) {
+                    request.setAttribute("success", "Member checked in successfully.");
+                } else {
+                    request.setAttribute("error", "Check-in failed.");
+                }
+            } catch (Exception e) {
+                request.setAttribute("error", e.getMessage());
+            }
+
+            // reload today's attendance and forward back to JSP so messages and table show
+            request.setAttribute("records", attendanceService.getTodayAttendance());
+            request.getRequestDispatcher("/attendance/checkIn.jsp").forward(request, response);
 
         } else if ("checkout".equals(action)) {
             // Record check-out time for an existing attendance record
@@ -114,11 +132,73 @@ public class AttendanceServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/attendance?action=today");
 
         } else if ("delete".equals(action)) {
-            // Admin only: permanently delete an attendance record
-            int recordId = Integer.parseInt(request.getParameter("recordId"));
-            attendanceService.deleteRecord(recordId);
-            request.getSession().setAttribute("successMessage", "Attendance record deleted.");
-            response.sendRedirect(request.getContextPath() + "/attendance?action=today");
+            HttpSession session = request.getSession(false);
+            Member loggedMember = (session != null) ? (Member) session.getAttribute("loggedMember") : null;
+            if (loggedMember == null) {
+                response.sendRedirect(request.getContextPath() + "/index.jsp");
+                return;
+            }
+
+            if (!"ADMIN".equalsIgnoreCase(loggedMember.getMembershipType())) {
+                request.setAttribute("error", "Only admin can delete attendance records.");
+                forwardAfterDelete(request, response);
+                return;
+            }
+
+            String recordIdParam = request.getParameter("recordId");
+            int recordId = 0;
+            try {
+                recordId = Integer.parseInt(recordIdParam);
+            } catch (NumberFormatException e) {
+                request.setAttribute("error", "Invalid attendance record ID.");
+                forwardAfterDelete(request, response);
+                return;
+            }
+
+            boolean deleted = attendanceService.deleteRecord(recordId);
+            if (deleted) {
+                request.setAttribute("success", "Attendance record deleted successfully.");
+            } else {
+                request.setAttribute("error", "Failed to delete attendance record.");
+            }
+            forwardAfterDelete(request, response);
+        }
+    }
+
+    private void forwardAfterDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String returnAction = request.getParameter("returnAction");
+        if (returnAction == null) {
+            returnAction = "today";
+        }
+
+        switch (returnAction) {
+            case "history":
+                int memberId = 0;
+                if (request.getParameter("memberId") != null) {
+                    try {
+                        memberId = Integer.parseInt(request.getParameter("memberId"));
+                    } catch (NumberFormatException ignored) {
+                        memberId = 0;
+                    }
+                }
+                request.setAttribute("records", attendanceService.getAttendanceByMember(memberId));
+                request.setAttribute("memberId", memberId);
+                request.getRequestDispatcher("/attendance/attendanceHistory.jsp").forward(request, response);
+                break;
+            case "report":
+                String date = request.getParameter("reportDate");
+                if (date == null || date.isEmpty()) {
+                    date = java.time.LocalDate.now().toString();
+                }
+                request.setAttribute("records", attendanceService.getAttendanceByDate(date));
+                request.setAttribute("reportDate", date);
+                request.getRequestDispatcher("/attendance/attendanceReport.jsp").forward(request, response);
+                break;
+            default:
+                request.setAttribute("records", attendanceService.getTodayAttendance());
+                request.getRequestDispatcher("/attendance/checkIn.jsp").forward(request, response);
+                break;
         }
     }
 }
