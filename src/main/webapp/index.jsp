@@ -47,7 +47,7 @@
                 </div>
                 <div class="mt-4 p-3 bg-light rounded text-center border">
                     <small class="text-muted d-block mb-1 d-flex justify-content-center align-items-center"><i data-lucide="info" style="width:14px;height:14px;" class="me-1"></i><strong>Demo Login</strong></small>
-                    <small class="text-muted d-block">Email: <code>kasun@gmail.com</code></small>
+                    <small class="text-muted d-block">Email: <code>kasun@gmail.com</code> | <code>admin@gmail.com</code></small>
                     <small class="text-muted d-block">Password: <code>password123</code></small>
                 </div>
             </div>
